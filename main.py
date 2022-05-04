@@ -11,8 +11,8 @@ def load_svg(filename):
 
 pygame.init()
 size = width, height = 480, 320
-screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-# screen = pygame.display.set_mode(size)
+# screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+screen = pygame.display.set_mode(size)
 pygame.mouse.set_visible(False)
 
 currentWeatherIcon = load_svg("svg/wi-day-cloudy.svg")
@@ -87,7 +87,7 @@ while 1:
     screen.blit(currentWeatherDescription, currentWeatherDescriptionRect)
     screen.blit(currentWeatherFeelLike, (180, 18))
     screen.blit(currentWeatherWind, (180, 34))
-    screen.blit(currentWeatherHumidity, (180, 50))
+    screen.blit(currentWeatherHumidity, (180, 50mion))
     screen.blit(currentTime, currentTimeRect)
     screen.blit(currentZone, currentZoneRect)
 
