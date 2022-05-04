@@ -87,7 +87,7 @@ while 1:
     screen.blit(currentWeatherDescription, currentWeatherDescriptionRect)
     screen.blit(currentWeatherFeelLike, (180, 18))
     screen.blit(currentWeatherWind, (180, 34))
-    screen.blit(currentWeatherHumidity, (180, 50mion))
+    screen.blit(currentWeatherHumidity, (180, 50))
     screen.blit(currentTime, currentTimeRect)
     screen.blit(currentZone, currentZoneRect)
 
