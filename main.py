@@ -85,8 +85,8 @@ def create_text(text, font, color, pos, max_width=None):
 
 pygame.init()
 size = width, height = 480, 320
-screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-# screen = pygame.display.set_mode(size)
+# screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+screen = pygame.display.set_mode(size)
 pygame.mouse.set_visible(False)
 
 currentWeatherIcon = load_svg("svg/wi-day-cloudy.svg")
@@ -119,6 +119,7 @@ font_14 = pygame.font.Font('jbm.ttf', 14)
 font_12 = pygame.font.Font('jbm.ttf', 12)
 font_10 = pygame.font.Font('jbm.ttf', 10)
 font_8 = pygame.font.Font('jbm.ttf', 8)
+font_ch = pygame.font.Font("ht.otf", 10)
 
 currentTempC = font_18.render('30.0°C', True, (255, 255, 255), (0, 0, 0))
 currentTempF = font_12.render('86.0°F', True, (255, 255, 255), (0, 0, 0))
@@ -167,6 +168,22 @@ techNewsTitle = create_text(
 
 currencyConvertion = font_10.render('1 USD = 4.35 MYR', True, (255, 255, 255), (0, 0, 0))
 
+co2label = font_8.render('CO2', True, (255, 255, 255), (0, 0, 0))
+no2label = font_8.render('NO2', True, (255, 255, 255), (0, 0, 0))
+o3label = font_8.render('O3', True, (255, 255, 255), (0, 0, 0))
+so2 = font_8.render('SO2', True, (255, 255, 255), (0, 0, 0))
+pm25label = font_8.render('PM2.5', True, (255, 255, 255), (0, 0, 0))
+pm10label = font_8.render('PM10', True, (255, 255, 255), (0, 0, 0))
+
+co2value = font_10.render('614ppm', True, (255, 255, 255), (0, 0, 0))
+no2value = font_10.render('13ppm', True, (255, 255, 255), (0, 0, 0))
+o3value = font_10.render('0.1ppm', True, (255, 255, 255), (0, 0, 0))
+so2value = font_10.render('10ppm', True, (255, 255, 255), (0, 0, 0))
+pm25value = font_10.render('19µm', True, (255, 255, 255), (0, 0, 0))
+pm10value = font_10.render('21µm', True, (255, 255, 255), (0, 0, 0))
+
+lunarDate = font_ch.render('立夏 农历三月廿九', True, (255, 255, 255), (0, 0, 0))
+
 currentWeatherDescriptionRect = currentWeatherDescription.get_rect(center = (80, 64))
 currentTimeRect = currentTime.get_rect(center = (320+80, 32))
 currentZoneRect = currentZone.get_rect(center = (320+80, 48))
@@ -189,6 +206,8 @@ nightWindRect = nightWind.get_rect(center = (360+60, 186))
 moonStateLabelRect = moonStateLabel.get_rect(center = (215+50, 274))
 
 currencyConvertionRect = currencyConvertion.get_rect(center = (0+67.5, 288+16))
+
+lunarDateRect = lunarDate.get_rect(center = (368+56, 288+16))
 
 while 1:
     screen.fill((0, 0, 0))
@@ -250,6 +269,22 @@ while 1:
 
     screen.blit(currencyConvertion, currencyConvertionRect)
 
+    screen.blit(co2label, (140, 292))
+    screen.blit(no2label, (180, 292))
+    screen.blit(o3label, (220, 292))
+    screen.blit(so2, (260, 292))
+    screen.blit(pm25label, (300, 292))
+    screen.blit(pm10label, (340, 292))
+
+    screen.blit(co2value, (140, 302))
+    screen.blit(no2value, (180, 302))
+    screen.blit(o3value, (220, 302))
+    screen.blit(so2value, (260, 302))
+    screen.blit(pm25value, (300, 302))
+    screen.blit(pm10value, (340, 302))
+
+    screen.blit(lunarDate, lunarDateRect)
+
     pygame.draw.line(screen, (255, 255, 255), (0, 80), (480, 80), 1)
     pygame.draw.line(screen, (255, 255, 255), (160, 0), (160, 80), 1)
     pygame.draw.line(screen, (255, 255, 255), (320, 0), (320, 80), 1)
@@ -258,5 +293,6 @@ while 1:
     pygame.draw.line(screen, (255, 255, 255), (215, 202), (215, 288), 1)
     pygame.draw.line(screen, (255, 255, 255), (315, 202), (315, 288), 1)
     pygame.draw.line(screen, (255, 255, 255), (135, 288), (135, 320), 1)
+    pygame.draw.line(screen, (255, 255, 255), (368, 288), (368, 320), 1)
 
     pygame.display.flip()
