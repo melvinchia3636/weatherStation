@@ -1,12 +1,20 @@
 import sys
 import pygame
+import cairosvg
+import io
+
+def load_svg(filename):
+    new_bites = cairosvg.svg2png(url = filename)
+    byte_io = io.BytesIO(new_bites)
+    return pygame.image.load(byte_io)
+
 
 pygame.init()
 size = width, height = 480, 320
 speed = [2, 2]
 black = 0, 0, 0
 screen = pygame.display.set_mode(size)
-currentWeatherIcon = pygame.image.load("svg/wi-cloudy.svg")
+currentWeatherIcon = load_svg("svg/wi-cloudy.svg")
 font_18 = pygame.font.Font('jbm.ttf', 18)
 font_12 = pygame.font.Font('jbm.ttf', 12)
 font_10 = pygame.font.Font('jbm.ttf', 10)
