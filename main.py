@@ -13,7 +13,7 @@ pygame.init()
 size = width, height = 480, 320
 speed = [2, 2]
 black = 0, 0, 0
-screen = pygame.display.set_mode(size)
+screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
 currentWeatherIcon = load_svg("svg/wi-cloudy.svg")
 font_18 = pygame.font.Font('jbm.ttf', 18)
 font_12 = pygame.font.Font('jbm.ttf', 12)
@@ -35,7 +35,7 @@ currentZoneRect = currentZone.get_rect(center = (320+80, 48))
 while 1:
     screen.fill(black)
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             sys.exit()
 
     screen.blit(currentWeatherIcon, (20, 8))
