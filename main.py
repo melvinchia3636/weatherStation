@@ -93,7 +93,7 @@ class WeatherStation:
         pygame.init()
 
         size = 480, 320
-        self.screen = self.display.set_mode(size, self.FULLSCREEN)
+        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
         # self.screen = pygame.display.set_mode(size)
         pygame.display.set_caption("Weather Station")
 
