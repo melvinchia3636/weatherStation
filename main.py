@@ -10,10 +10,12 @@ import random
 
 WEATHER_DATA = json.load(open('weathers.json'))
 
+
 def load_svg(filename):
-    new_bites = cairosvg.svg2png(url = filename)
+    new_bites = cairosvg.svg2png(url=filename)
     byte_io = io.BytesIO(new_bites)
     return pygame.image.load(byte_io)
+
 
 def wrap_text(text, font, max_width):
     texts = text.replace("\t", "    ").split("\n")
@@ -35,7 +37,7 @@ def wrap_text(text, font, max_width):
             if " " not in text[a + 1:]:
                 b = len(text)
                 bline = text
-                
+
             else:
                 b = text.index(" ", a + 1)
                 while text[b - 1] == " ":
@@ -61,6 +63,7 @@ def wrap_text(text, font, max_width):
             lines.append(line)
     return lines
 
+
 def create_text(text, font, color, pos, max_width=None):
     if max_width is not None:
         lines = wrap_text(text, font, max_width)
@@ -78,6 +81,7 @@ def create_text(text, font, color, pos, max_width=None):
         text_objects.append((text_surface, (pos[0], y_pos)))
 
     return text_objects
+
 
 class WeatherStation:
     airQualities = ['co', 'no2', 'o3', 'so2', 'pm2_5', 'pm10']
@@ -104,8 +108,7 @@ class WeatherStation:
         'moonrise',
         'moonset'
     ]
-    
-    
+
     def __init__(self):
         pygame.init()
 
@@ -125,7 +128,7 @@ class WeatherStation:
 
         self.initFonts()
         self.initLabel()
-        
+
         self.updateTime()
 
         self.updateWeather()
@@ -138,70 +141,95 @@ class WeatherStation:
         self.updateRect()
 
     def fetchWeather(self):
-        self.weatherData = requests.get("http://api.weatherapi.com/v1/forecast.json?key=3226026245ad4bd4a0d75052220405&q=Johor&days=1&aqi=yes&alerts=no").json()
+        self.weatherData = requests.get(
+            "http://api.weatherapi.com/v1/forecast.json?key=3226026245ad4bd4a0d75052220405&q=Johor&days=1&aqi=yes&alerts=no").json()
 
     def fetchCurrencyConvertion(self):
-        self.currencyConvertionRate = requests.get("https://open.er-api.com/v6/latest/USD").json()['rates']['MYR']
+        self.currencyConvertionRate = requests.get(
+            "https://open.er-api.com/v6/latest/USD").json()['rates']['MYR']
 
     def fetchNews(self):
-        self.newsData = requests.get("https://api.nytimes.com/svc/topstories/v2/technology.json?api-key=53BGQxklAkbUFc7fewNlsuUABdSqzlgs").json()['results']
+        self.newsData = requests.get(
+            "https://api.nytimes.com/svc/topstories/v2/technology.json?api-key=53BGQxklAkbUFc7fewNlsuUABdSqzlgs").json()['results']
 
     def fetchLunarDate(self):
-        self.lunarDate = requests.get("http://api.tianapi.com/lunar/index?key=1937befd766fa706c6169f6a2153a0f8&date={}-{}-{}".format(datetime.now().year, datetime.now().month, datetime.now().day)).json()['newslist'][0]
-        
+        self.lunarDate = requests.get("http://api.tianapi.com/lunar/index?key=1937befd766fa706c6169f6a2153a0f8&date={}-{}-{}".format(
+            datetime.now().year, datetime.now().month, datetime.now().day)).json()['newslist'][0]
+
     def updateIcons(self):
-        self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day' if self.weatherData['current']['is_day'] else 'night'] == self.weatherData['current']['condition']['text']][0]['dayIcon' if self.weatherData['current']['is_day'] else 'nightIcon']+".svg")
-        
+        self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day' if self.weatherData['current']['is_day'] else 'night']
+                                           == self.weatherData['current']['condition']['text']][0]['dayIcon' if self.weatherData['current']['is_day'] else 'nightIcon']+".svg")
+
         self.__dict__.update({
-            f'{d}WeatherIcon': load_svg('svg/'+[w for w in WEATHER_DATA if w['day' if i<=1 else 'night'] == self.weatherData['forecast']['forecastday'][0]['hour'][[6, 12, 19, 0][i]]['condition']['text']][0][('day' if i<=1 else 'night')+'Icon']+".svg") for i, d in enumerate(self.forecast)
+            f'{d}WeatherIcon': load_svg('svg/'+[w for w in WEATHER_DATA if w['day' if i <= 1 else 'night'] == self.weatherData['forecast']['forecastday'][0]['hour'][[6, 12, 19, 0][i]]['condition']['text']][0][('day' if i <= 1 else 'night')+'Icon']+".svg") for i, d in enumerate(self.forecast)
         })
 
-        self.__dict__.update({f'{i}Icon': pygame.transform.scale(load_svg(f"svg/wi-{i}.svg"), (30, 30)) for i in self.astro})
+        self.__dict__.update({f'{i}Icon': pygame.transform.scale(
+            load_svg(f"svg/wi-{i}.svg"), (30, 30)) for i in self.astro})
 
-        self.moonStateIcon = load_svg('svg/wi-moon-'+self.weatherData['forecast']['forecastday'][0]['astro']['moon_phase'].lower().replace(" ", '-')+".svg")
+        self.moonStateIcon = load_svg(
+            'svg/wi-moon-'+self.weatherData['forecast']['forecastday'][0]['astro']['moon_phase'].lower().replace(" ", '-')+".svg")
 
-        self.__dict__.update({f"{i}WeatherIconRect": self.__dict__[f"{i}WeatherIcon"].get_rect(center = (index*120 + 60, 136)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f"{i}WeatherIconRect": self.__dict__[f"{i}WeatherIcon"].get_rect(
+            center=(index*120 + 60, 136)) for index, i in enumerate(self.forecast)})
 
-        self.moonStateIconRect = self.moonStateIcon.get_rect(center = (215 + 50, 236))
+        self.moonStateIconRect = self.moonStateIcon.get_rect(
+            center=(215 + 50, 236))
 
     def initFonts(self):
-        self.__dict__.update({f"font_{i}": pygame.font.Font(f"fonts/jbm.ttf", i) for i in [18, 14, 12, 10, 8]})
+        self.__dict__.update({f"font_{i}": pygame.font.Font(
+            f"fonts/jbm.ttf", i) for i in [18, 14, 12, 10, 8]})
         self.font_ch = pygame.font.Font("fonts/ht.otf", 10)
 
     def initLabel(self):
-        self.__dict__.update({f'{i}Label': self.font_10.render(i.title(), True, (255, 255, 255), (0, 0, 0)) for i in self.forecast+self.astro})
+        self.__dict__.update({f'{i}Label': self.font_10.render(
+            i.title(), True, (255, 255, 255), (0, 0, 0)) for i in self.forecast+self.astro})
 
-        self.techNewsLabel = self.font_8.render('Random Tech News', True, (255, 255, 255), (0, 0, 0))
+        self.techNewsLabel = self.font_8.render(
+            'Random Tech News', True, (255, 255, 255), (0, 0, 0))
 
         self.__dict__.update({
             f'{i}label': self.font_8.render(i.upper().replace("_", '.'), True, (255, 255, 255), (0, 0, 0)) for i in self.airQualities
         })
 
     def updateTime(self):
-        self.currentTime = self.font_10.render(datetime.strftime(datetime.now(), '%a, %b %d %I:%M:%S %p'), True, (255, 255, 255), (0, 0, 0))
+        self.currentTime = self.font_10.render(datetime.strftime(
+            datetime.now(), '%a, %b %d %I:%M:%S %p'), True, (255, 255, 255), (0, 0, 0))
 
     def updateWeather(self):
         weather = self.weatherData['current']
 
-        self.currentTempC = self.font_18.render(str(weather['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0))
-        self.currentTempF = self.font_12.render(str(weather['temp_f'])+'°F', True, (255, 255, 255), (0, 0, 0))
-        self.currentWeatherDescription = self.font_10.render(weather['condition']['text'], True, (255, 255, 255), (0, 0, 0))
-        self.currentWeatherFeelLike = self.font_10.render('Feels like: {}°C'.format(weather['feelslike_c']), True, (255, 255, 255), (0, 0, 0))
-        self.currentWeatherWind = self.font_10.render('Wind: {} @ {} km/h'.format(weather['wind_dir'], self.weatherData['current']['wind_kph']), True, (255, 255, 255), (0, 0, 0))
-        self.currentWeatherHumidity = self.font_10.render('Humidity: {}%'.format(weather['humidity']), True, (255, 255, 255), (0, 0, 0))
-        
-        self.currentZone = self.font_10.render(self.weatherData['location']['tz_id'], True, (255, 255, 255), (0, 0, 0))
+        self.currentTempC = self.font_18.render(
+            str(weather['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0))
+        self.currentTempF = self.font_12.render(
+            str(weather['temp_f'])+'°F', True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherDescription = self.font_10.render(
+            weather['condition']['text'], True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherFeelLike = self.font_10.render('Feels like: {}°C'.format(
+            weather['feelslike_c']), True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherWind = self.font_10.render('Wind: {} @ {} km/h'.format(
+            weather['wind_dir'], self.weatherData['current']['wind_kph']), True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherHumidity = self.font_10.render(
+            'Humidity: {}%'.format(weather['humidity']), True, (255, 255, 255), (0, 0, 0))
 
-        self.__dict__.update({f'{i}value': self.font_10.render(str(round(weather['air_quality'][i]))+'µm', True, (255, 255, 255), (0, 0, 0)) for i in self.airQualities})
+        self.currentZone = self.font_10.render(
+            self.weatherData['location']['tz_id'], True, (255, 255, 255), (0, 0, 0))
+
+        self.__dict__.update({f'{i}value': self.font_10.render(str(round(
+            weather['air_quality'][i]))+'µm', True, (255, 255, 255), (0, 0, 0)) for i in self.airQualities})
 
         weather = self.weatherData['forecast']['forecastday'][0]
 
-        self.__dict__.update({f'{i}Temp': self.font_14.render(str(weather['hour'][[6, 12, 19, 0][index]]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
-        self.__dict__.update({f'{i}Wind': self.font_8.render('{} @ {} km/h'.format(weather['hour'][[6, 12, 19, 0][index]]['wind_dir'], weather['hour'][[6, 12, 19, 0][index]]['wind_kph']), True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f'{i}Temp': self.font_14.render(str(weather['hour'][[
+                             6, 12, 19, 0][index]]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f'{i}Wind': self.font_8.render('{} @ {} km/h'.format(weather['hour'][[6, 12, 19, 0][index]]['wind_dir'], weather['hour'][[
+                             6, 12, 19, 0][index]]['wind_kph']), True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
 
-        self.__dict__.update({f'{i}Time': self.font_10.render(weather['astro'][i], True, (255, 255, 255), (0, 0, 0)) for i in self.astro})
+        self.__dict__.update({f'{i}Time': self.font_10.render(
+            weather['astro'][i], True, (255, 255, 255), (0, 0, 0)) for i in self.astro})
 
-        self.moonState = self.font_10.render(weather['astro']['moon_phase'], True, (255, 255, 255), (0, 0, 0))
+        self.moonState = self.font_10.render(
+            weather['astro']['moon_phase'], True, (255, 255, 255), (0, 0, 0))
 
     def updateNews(self):
         self.techNewsTitle = create_text(
@@ -213,27 +241,34 @@ class WeatherStation:
         )
 
     def updateCurrencyConvertion(self):
-        self.currencyConvertion = self.font_10.render(f'1 USD = {self.currencyConvertionRate} MYR', True, (255, 255, 255), (0, 0, 0))
+        self.currencyConvertion = self.font_10.render(
+            f'1 USD = {self.currencyConvertionRate} MYR', True, (255, 255, 255), (0, 0, 0))
 
     def updateLunarDate(self):
         print(self.lunarDate['lubarmonth'], self.lunarDate['lunardate'])
-        self.lunarDate = self.font_ch.render('{}年 {}{}'.format(self.lunarDate['tiangandizhiyear'], self.lunarDate['lubarmonth'], self.lunarDate['lunarday']), True, (255, 255, 255), (0, 0, 0))
+        self.lunarDate = self.font_ch.render('{}年 {}{}'.format(
+            self.lunarDate['tiangandizhiyear'], self.lunarDate['lubarmonth'], self.lunarDate['lunarday']), True, (255, 255, 255), (0, 0, 0))
 
     def updateRect(self):
-        self.currentTimeRect = self.currentTime.get_rect(center = (320+80, 32))
+        self.currentTimeRect = self.currentTime.get_rect(center=(320+80, 32))
 
-        self.currentWeatherDescriptionRect = self.currentWeatherDescription.get_rect(center = (80, 64))
-        self.currentZoneRect = self.currentZone.get_rect(center = (320+80, 48))
+        self.currentWeatherDescriptionRect = self.currentWeatherDescription.get_rect(
+            center=(80, 64))
+        self.currentZoneRect = self.currentZone.get_rect(center=(320+80, 48))
 
-        self.__dict__.update({f'{i}LabelRect': self.__dict__[f'{i}Label'].get_rect(center = (index*120+60, 96)) for index, i in enumerate(self.forecast)})
-        self.__dict__.update({f'{i}TempRect': self.__dict__[f'{i}Temp'].get_rect(center = (index*120+60, 170)) for index, i in enumerate(self.forecast)})
-        self.__dict__.update({f'{i}WindRect': self.__dict__[f'{i}Wind'].get_rect(center = (index*120+60, 186)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f'{i}LabelRect': self.__dict__[f'{i}Label'].get_rect(
+            center=(index*120+60, 96)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f'{i}TempRect': self.__dict__[f'{i}Temp'].get_rect(
+            center=(index*120+60, 170)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f'{i}WindRect': self.__dict__[f'{i}Wind'].get_rect(
+            center=(index*120+60, 186)) for index, i in enumerate(self.forecast)})
 
-        self.moonStateRect = self.moonState.get_rect(center = (215+50, 274))
+        self.moonStateRect = self.moonState.get_rect(center=(215+50, 274))
 
-        self.currencyConvertionRect = self.currencyConvertion.get_rect(center = (0+67.5, 288+16))
+        self.currencyConvertionRect = self.currencyConvertion.get_rect(
+            center=(0+67.5, 288+16))
 
-        self.lunarDateRect = self.lunarDate.get_rect(center = (368+56, 288+16))
+        self.lunarDateRect = self.lunarDate.get_rect(center=(368+56, 288+16))
 
     def draw(self):
         self.screen.fill((0, 0, 0))
@@ -244,16 +279,19 @@ class WeatherStation:
         self.screen.blit(self.currentWeatherIcon, (20, 8))
         self.screen.blit(self.currentTempC, (70, 10))
         self.screen.blit(self.currentTempF, (70, 32))
-        self.screen.blit(self.currentWeatherDescription, self.currentWeatherDescriptionRect)
+        self.screen.blit(self.currentWeatherDescription,
+                         self.currentWeatherDescriptionRect)
         self.screen.blit(self.currentWeatherFeelLike, (180, 18))
         self.screen.blit(self.currentWeatherWind, (180, 34))
         self.screen.blit(self.currentWeatherHumidity, (180, 50))
         self.screen.blit(self.currentTime, self.currentTimeRect)
         self.screen.blit(self.currentZone, self.currentZoneRect)
 
-        [self.screen.blit(self.__dict__[f'{i}{t}'], self.__dict__[f'{i}{t}Rect']) for t in ['Label', 'WeatherIcon', 'Temp', "Wind"] for i in self.forecast]
-        [self.screen.blit(self.__dict__[f'{i}{t}'], self.__dict__[f'{i}{t}Rect']) for t in ['Icon', 'Label', 'Time'] for i in self.astro]
-        
+        [self.screen.blit(self.__dict__[f'{i}{t}'], self.__dict__[f'{i}{t}Rect']) for t in [
+            'Label', 'WeatherIcon', 'Temp', "Wind"] for i in self.forecast]
+        [self.screen.blit(self.__dict__[f'{i}{t}'], self.__dict__[f'{i}{t}Rect']) for t in [
+            'Icon', 'Label', 'Time'] for i in self.astro]
+
         self.screen.blit(self.moonStateIcon, self.moonStateIconRect)
         self.screen.blit(self.moonState, self.moonStateRect)
 
@@ -263,12 +301,15 @@ class WeatherStation:
 
         self.screen.blit(self.currencyConvertion, self.currencyConvertionRect)
 
-        [self.screen.blit(self.__dict__[f'{v}label'], (140+i*40, 292)) for i, v in enumerate(self.airQualities)]
-        [self.screen.blit(self.__dict__[f'{v}value'], (140+i*40, 302)) for i, v in enumerate(self.airQualities)]
+        [self.screen.blit(self.__dict__[f'{v}label'], (140+i*40, 292))
+         for i, v in enumerate(self.airQualities)]
+        [self.screen.blit(self.__dict__[f'{v}value'], (140+i*40, 302))
+         for i, v in enumerate(self.airQualities)]
 
         self.screen.blit(self.lunarDate, self.lunarDateRect)
 
-        [pygame.draw.line(self.screen, (255, 255, 255), x, y, 1) for x, y in self.lines]
+        [pygame.draw.line(self.screen, (255, 255, 255), x, y, 1)
+         for x, y in self.lines]
 
         pygame.display.flip()
         self.tick += 1
@@ -287,7 +328,7 @@ class WeatherStation:
             if self.tick % 3600 == 0:
                 self.fetchCurrencyConvertion()
                 self.updateCurrencyConvertion()
-            
+
             if self.tick % 30 == 0:
                 self.updateNews()
 
@@ -299,6 +340,7 @@ class WeatherStation:
                 self.updateLunarDate()
 
             self.updateRect()
+
 
 if __name__ == "__main__":
     station = WeatherStation()
