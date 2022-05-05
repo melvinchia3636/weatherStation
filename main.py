@@ -6,6 +6,7 @@ import io
 import numpy as np
 import requests
 import json
+import random
 
 WEATHER_DATA = json.load(open('weathers.json'))
 
@@ -93,8 +94,8 @@ class WeatherStation:
         pygame.init()
 
         size = 480, 320
-        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-        # self.screen = pygame.display.set_mode(size)
+        #self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode(size)
         pygame.display.set_caption("Weather Station")
 
         pygame.mouse.set_visible(False)
@@ -102,6 +103,10 @@ class WeatherStation:
         self.tick = 0
 
         self.fetchWeather()
+        self.fetchNews()
+        self.fetchCurrencyConvertion()
+        self.fetchLunarDate()
+
         self.initFonts()
         self.initLabel()
         
@@ -119,6 +124,15 @@ class WeatherStation:
     def fetchWeather(self):
         self.weatherData = requests.get("http://api.weatherapi.com/v1/forecast.json?key=3226026245ad4bd4a0d75052220405&q=Johor&days=1&aqi=yes&alerts=no").json()
 
+    def fetchCurrencyConvertion(self):
+        self.currencyConvertionRate = requests.get("https://open.er-api.com/v6/latest/USD").json()['rates']['MYR']
+
+    def fetchNews(self):
+        self.newsData = requests.get("https://api.nytimes.com/svc/topstories/v2/technology.json?api-key=53BGQxklAkbUFc7fewNlsuUABdSqzlgs").json()['results']
+
+    def fetchLunarDate(self):
+        self.lunarDate = requests.get("http://api.tianapi.com/lunar/index?key=1937befd766fa706c6169f6a2153a0f8&date={}-{}-{}".format(datetime.now().year, datetime.now().month, datetime.now().day)).json()['newslist'][0]
+        
     def updateIcons(self):
         if self.weatherData['current']['is_day']:
             self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day'] == self.weatherData['current']['condition']['text']][0]['dayIcon']+".svg")
@@ -140,7 +154,7 @@ class WeatherStation:
         self.moonriseIcon = pygame.transform.scale(moonriseIcon, (30, 30))
         self.moonsetIcon = pygame.transform.scale(moonsetIcon, (30, 30))
         
-        self.moonStateIcon = load_svg("svg/wi-moon-waxing-crescent-3.svg")
+        self.moonStateIcon = load_svg('svg/wi-moon-'+self.weatherData['forecast']['forecastday'][0]['astro']['moon_phase'].lower().replace(" ", '-')+".svg")
 
         self.morningWeatherIconRect = self.morningWeatherIcon.get_rect(center = (0 + 60, 136))
         self.afternoonWeatherIconRect = self.afternoonWeatherIcon.get_rect(center = (120 + 60, 136))
@@ -219,7 +233,7 @@ class WeatherStation:
 
     def updateNews(self):
         self.techNewsTitle = create_text(
-            text="Amazon Union Loses Vote at Second Staten Island Warehouse",
+            text=random.choice(self.newsData)['title'],
             font=self.font_10,
             color=(255, 255, 255),  # White
             pos=(325, 230),  # Center of the self.screen
@@ -227,10 +241,11 @@ class WeatherStation:
         )
 
     def updateCurrencyConvertion(self):
-        self.currencyConvertion = self.font_10.render('1 USD = 4.35 MYR', True, (255, 255, 255), (0, 0, 0))
+        self.currencyConvertion = self.font_10.render(f'1 USD = {self.currencyConvertionRate} MYR', True, (255, 255, 255), (0, 0, 0))
 
     def updateLunarDate(self):
-        self.lunarDate = self.font_ch.render('立夏 农历三月廿九', True, (255, 255, 255), (0, 0, 0))
+        print(self.lunarDate['lubarmonth'], self.lunarDate['lunardate'])
+        self.lunarDate = self.font_ch.render('{}年 {}{}'.format(self.lunarDate['tiangandizhiyear'], self.lunarDate['lubarmonth'], self.lunarDate['lunarday']), True, (255, 255, 255), (0, 0, 0))
 
     def updateRect(self):
         self.currentTimeRect = self.currentTime.get_rect(center = (320+80, 32))
@@ -358,6 +373,20 @@ class WeatherStation:
                 self.fetchWeather()
                 self.updateWeather()
                 self.updateIcons()
+
+            if self.tick % 3600 == 0:
+                self.fetchCurrencyConvertion()
+                self.updateCurrencyConvertion()
+            
+            if self.tick % 30 == 0:
+                self.updateNews()
+
+            if self.tick % 10800 == 0:
+                self.fetchNews()
+
+            if datetime.now().hour == 0 and datetime.now().minute == 1:
+                self.fetchLunarDate()
+                self.updateLunarDate()
 
             self.updateRect()
 

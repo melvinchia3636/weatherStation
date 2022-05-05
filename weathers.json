@@ -14,14 +14,14 @@
   {
     "day": "Cloudy",
     "night": "Cloudy",
-    "dayIcon": "wi-cloud",
-    "nightIcon": "wi-cloud"
+    "dayIcon": "wi-day-cloud",
+    "nightIcon": "wi-night-cloud"
   },
   {
     "day": "Overcast",
     "night": "Overcast",
-    "dayIcon": "wi-cloudy",
-    "nightIcon": "wi-cloudy"
+    "dayIcon": "wi-day-cloudy",
+    "nightIcon": "wi-night-cloudy"
   },
   {
     "day": "Mist",
@@ -44,8 +44,8 @@
   {
     "day": "Fog",
     "night": "Fog",
-    "dayIcon": "wi-fog",
-    "nightIcon": "wi-fog"
+    "dayIcon": "wi-fog-day",
+    "nightIcon": "wi-fog-night"
   },
   {
     "day": "Patchy light drizzle",
@@ -56,8 +56,8 @@
   {
     "day": "Light drizzle",
     "night": "Light drizzle",
-    "dayIcon": "wi-sprinkle",
-    "nightIcon": "wi-sprinkle"
+    "dayIcon": "wi-sprinkle-day",
+    "nightIcon": "wi-sprinkle-night"
   },
   {
     "day": "Patchy light rain",
@@ -68,32 +68,32 @@
   {
     "day": "Light rain",
     "night": "Light rain",
-    "dayIcon": "wi-rain",
-    "nightIcon": "wi-rain"
+    "dayIcon": "wi-rain-day",
+    "nightIcon": "wi-rain-night"
   },
   {
     "day": "Moderate rain at times",
     "night": "Moderate rain at times",
-    "dayIcon": "wi-rain",
-    "nightIcon": "wi-rain"
+    "dayIcon": "wi-rain-day",
+    "nightIcon": "wi-rain-night"
   },
   {
     "day": "Moderate rain",
     "night": "Moderate rain",
-    "dayIcon": "wi-rain",
-    "nightIcon": "wi-rain"
+    "dayIcon": "wi-rain-day",
+    "nightIcon": "wi-rain-night"
   },
   {
     "day": "Heavy rain at times",
     "night": "Heavy rain at times",
-    "dayIcon": "wi-rain",
-    "nightIcon": "wi-rain"
+    "dayIcon": "wi-rain-day",
+    "nightIcon": "wi-rain-night"
   },
   {
     "day": "Heavy rain",
     "night": "Heavy rain",
-    "dayIcon": "wi-rain",
-    "nightIcon": "wi-rain"
+    "dayIcon": "wi-rain-day",
+    "nightIcon": "wi-rain-night"
   },
   {
     "day": "Light rain shower",
@@ -104,14 +104,14 @@
   {
     "day": "Moderate or heavy rain shower",
     "night": "Moderate or heavy rain shower",
-    "dayIcon": "wi-showers",
-    "nightIcon": "wi-showers"
+    "dayIcon": "wi-showers-day",
+    "nightIcon": "wi-showers-night"
   },
   {
     "day": "Torrential rain shower",
     "night": "Torrential rain shower",
-    "dayIcon": "wi-rain",
-    "nightIcon": "wi-rain"
+    "dayIcon": "wi-shower-day",
+    "nightIcon": "wi-shower-night"
   },
   {
     "day": "Patchy light rain with thunder",

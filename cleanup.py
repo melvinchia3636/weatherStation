@@ -1,7 +1,8 @@
 import os
 import json
 
-data = json.load(open('weathers.json'))
-data = sum([[i['dayIcon'], i['nightIcon']] for i in data], [])
-icons = [i.split('.').pop(0) for i in os.listdir("svg")]
-print([os.remove("svg/"+i+'.svg') for i in icons if i not in data])
+for i in os.listdir('svg'):
+  if 'day' in i:
+    content = open('svg/' + i).read()
+    content = content.replace('fill="#F59E0B"', 'fill="#FBBF24"')
+    open('svg/' + i, 'w').write(content)
