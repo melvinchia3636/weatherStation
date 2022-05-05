@@ -1,0 +1,128 @@
+[
+  {
+    "day": "Sunny",
+    "night": "Clear",
+    "dayIcon": "wi-day-sunny",
+    "nightIcon": "wi-night-clear"
+  },
+  {
+    "day": "Partly cloudy",
+    "night": "Partly cloudy",
+    "dayIcon": "wi-day-sunny-overcast",
+    "nightIcon": "wi-night-alt-partly-cloudy"
+  },
+  {
+    "day": "Cloudy",
+    "night": "Cloudy",
+    "dayIcon": "wi-cloud",
+    "nightIcon": "wi-cloud"
+  },
+  {
+    "day": "Overcast",
+    "night": "Overcast",
+    "dayIcon": "wi-cloudy",
+    "nightIcon": "wi-cloudy"
+  },
+  {
+    "day": "Mist",
+    "night": "Mist",
+    "dayIcon": "wi-day-fog",
+    "nightIcon": "wi-night-fog"
+  },
+  {
+    "day": "Patchy rain possible",
+    "night": "Patchy rain possible",
+    "dayIcon": "wi-day-rain",
+    "nightIcon": "wi-night-alt-rain"
+  },
+  {
+    "day": "Thundery outbreaks possible",
+    "night": "Thundery outbreaks possible",
+    "dayIcon": "wi-day-lightning",
+    "nightIcon": "wi-night-alt-lightning"
+  },
+  {
+    "day": "Fog",
+    "night": "Fog",
+    "dayIcon": "wi-fog",
+    "nightIcon": "wi-fog"
+  },
+  {
+    "day": "Patchy light drizzle",
+    "night": "Patchy light drizzle",
+    "dayIcon": "wi-day-sprinkle",
+    "nightIcon": "wi-night-alt-sprinkle"
+  },
+  {
+    "day": "Light drizzle",
+    "night": "Light drizzle",
+    "dayIcon": "wi-sprinkle",
+    "nightIcon": "wi-sprinkle"
+  },
+  {
+    "day": "Patchy light rain",
+    "night": "Patchy light rain",
+    "dayIcon": "wi-day-rain",
+    "nightIcon": "wi-night-alt-rain"
+  },
+  {
+    "day": "Light rain",
+    "night": "Light rain",
+    "dayIcon": "wi-rain",
+    "nightIcon": "wi-rain"
+  },
+  {
+    "day": "Moderate rain at times",
+    "night": "Moderate rain at times",
+    "dayIcon": "wi-rain",
+    "nightIcon": "wi-rain"
+  },
+  {
+    "day": "Moderate rain",
+    "night": "Moderate rain",
+    "dayIcon": "wi-rain",
+    "nightIcon": "wi-rain"
+  },
+  {
+    "day": "Heavy rain at times",
+    "night": "Heavy rain at times",
+    "dayIcon": "wi-rain",
+    "nightIcon": "wi-rain"
+  },
+  {
+    "day": "Heavy rain",
+    "night": "Heavy rain",
+    "dayIcon": "wi-rain",
+    "nightIcon": "wi-rain"
+  },
+  {
+    "day": "Light rain shower",
+    "night": "Light rain shower",
+    "dayIcon": "wi-day-showers",
+    "nightIcon": "wi-night-alt-showers"
+  },
+  {
+    "day": "Moderate or heavy rain shower",
+    "night": "Moderate or heavy rain shower",
+    "dayIcon": "wi-showers",
+    "nightIcon": "wi-showers"
+  },
+  {
+    "day": "Torrential rain shower",
+    "night": "Torrential rain shower",
+    "dayIcon": "wi-rain",
+    "nightIcon": "wi-rain"
+  },
+  {
+    "day": "Patchy light rain with thunder",
+    "night": "Patchy light rain with thunder",
+    "dayIcon": "wi-day-storm-showers",
+    "nightIcon": "wi-night-alt-storm-showers"
+  },
+  {
+    "day": "Moderate or heavy rain with thunder",
+    "night": "Moderate or heavy rain with thunder",
+    "dayIcon": "wi-day-thunderstorm",
+    "nightIcon": "wi-night-alt-thunderstorm"
+  }
+]

@@ -1,8 +1,13 @@
 import sys
+from datetime import datetime
 import pygame
 import cairosvg
 import io
 import numpy as np
+import requests
+import json
+
+WEATHER_DATA = json.load(open('weathers.json'))
 
 def load_svg(filename):
     new_bites = cairosvg.svg2png(url = filename)
@@ -83,216 +88,279 @@ def create_text(text, font, color, pos, max_width=None):
 
     return text_objects
 
-pygame.init()
-size = width, height = 480, 320
-screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-# screen = pygame.display.set_mode(size)
-pygame.mouse.set_visible(False)
+class WeatherStation:
+    def __init__(self):
+        pygame.init()
 
-currentWeatherIcon = load_svg("svg/wi-day-cloudy.svg")
-morningWeatherIcon = load_svg("svg/wi-day-hail.svg")
-afternoonWeatherIcon = load_svg("svg/wi-day-cloudy.svg")
-eveningWeatherIcon = load_svg("svg/wi-night-cloudy.svg")
-nightWeatherIcon = load_svg("svg/wi-night-clear.svg")
+        size = 480, 320
+        # self.screen = self.display.set_mode(size, self.FULLSCREEN)
+        self.screen = pygame.display.set_mode(size)
+        pygame.display.set_caption("Weather Station")
 
-sunriseIcon = load_svg("svg/wi-sunrise.svg")
-sunsetIcon = load_svg("svg/wi-sunset.svg")
-moonriseIcon = load_svg("svg/wi-moonrise.svg")
-moonsetIcon = load_svg("svg/wi-moonset.svg")
+        pygame.mouse.set_visible(False)
+        self.clock = pygame.time.Clock()
+        self.tick = 0
 
-sunriseIcon = pygame.transform.scale(sunriseIcon, (30, 30))
-sunsetIcon = pygame.transform.scale(sunsetIcon, (30, 30))
-moonriseIcon = pygame.transform.scale(moonriseIcon, (30, 30))
-moonsetIcon = pygame.transform.scale(moonsetIcon, (30, 30))
+        self.fetchWeather()
+        self.initFonts()
+        self.initLabel()
+        
+        self.updateTime()
 
-moonStateIcon = load_svg("svg/wi-moon-new.svg")
+        self.updateWeather()
+        self.updateIcons()
 
-morningWeatherIconRect = morningWeatherIcon.get_rect(center = (0 + 60, 136))
-afternoonWeatherIconRect = afternoonWeatherIcon.get_rect(center = (120 + 60, 136))
-eveningWeatherIconRect = eveningWeatherIcon.get_rect(center = (240 + 60, 136))
-nightWeatherIconRect = nightWeatherIcon.get_rect(center = (360 + 60, 136))
+        self.updateNews()
+        self.updateCurrencyConvertion()
+        self.updateLunarDate()
 
-moonStateIconRect = moonStateIcon.get_rect(center = (215 + 50, 236))
+        self.updateRect()
 
-font_18 = pygame.font.Font('jbm.ttf', 18)
-font_14 = pygame.font.Font('jbm.ttf', 14)
-font_12 = pygame.font.Font('jbm.ttf', 12)
-font_10 = pygame.font.Font('jbm.ttf', 10)
-font_8 = pygame.font.Font('jbm.ttf', 8)
-font_ch = pygame.font.Font("ht.otf", 10)
+    def fetchWeather(self):
+        self.weatherData = requests.get("http://api.weatherapi.com/v1/forecast.json?key=3226026245ad4bd4a0d75052220405&q=Johor&days=1&aqi=yes&alerts=no").json()
 
-currentTempC = font_18.render('30.0°C', True, (255, 255, 255), (0, 0, 0))
-currentTempF = font_12.render('86.0°F', True, (255, 255, 255), (0, 0, 0))
-currentWeatherDescription = font_10.render('Partially Cloudy', True, (255, 255, 255), (0, 0, 0))
-currentWeatherFeelLike = font_10.render('Feels like: 34.0°C', True, (255, 255, 255), (0, 0, 0))
-currentWeatherWind = font_10.render('Wind: SSW @ 19.1 km/h', True, (255, 255, 255), (0, 0, 0))
-currentWeatherHumidity = font_10.render('Humidity: 75%', True, (255, 255, 255), (0, 0, 0))
-currentTime = font_10.render('Sun, May 4 03:58:05 PM', True, (255, 255, 255), (0, 0, 0))
-currentZone = font_10.render('Asia/Singapore', True, (255, 255, 255), (0, 0, 0))
+    def updateIcons(self):
+        if self.weatherData['current']['is_day']:
+            self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day'] == self.weatherData['current']['condition']['text']][0]['dayIcon']+".svg")
+        else:
+            self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['night'] == self.weatherData['current']['condition']['text']][0]['nightIcon']+".svg")
+        self.morningWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day'] == self.weatherData['forecast']['forecastday'][0]['hour'][6]['condition']['text']][0]['dayIcon']+".svg")
+        self.afternoonWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day'] == self.weatherData['forecast']['forecastday'][0]['hour'][12]['condition']['text']][0]['dayIcon']+".svg")
 
-morningLabel = font_10.render('Morning', True, (255, 255, 255), (0, 0, 0))
-afternoonLabel = font_10.render('Afternoon', True, (255, 255, 255), (0, 0, 0))
-eveningLabel = font_10.render('Evening', True, (255, 255, 255), (0, 0, 0))
-nightLabel = font_10.render('Night', True, (255, 255, 255), (0, 0, 0))
+        self.eveningWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['night'] == self.weatherData['forecast']['forecastday'][0]['hour'][19]['condition']['text']][0]['nightIcon']+".svg")
+        self.nightWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['night'] == self.weatherData['forecast']['forecastday'][0]['hour'][0]['condition']['text']][0]['nightIcon']+".svg")
 
-morningTemp = font_14.render('25.9°C', True, (255, 255, 255), (0, 0, 0))
-afternoonTemp = font_14.render('30.7°C', True, (255, 255, 255), (0, 0, 0))
-eveningTemp = font_14.render('27.0°C', True, (255, 255, 255), (0, 0, 0))
-nightTemp = font_14.render('26.8°C', True, (255, 255, 255), (0, 0, 0))
+        sunriseIcon = load_svg("svg/wi-sunrise.svg")
+        sunsetIcon = load_svg("svg/wi-sunset.svg")
+        moonriseIcon = load_svg("svg/wi-moonrise.svg")
+        moonsetIcon = load_svg("svg/wi-moonset.svg")
 
-morningWind = font_8.render('SW @ 7.9 km/h', True, (255, 255, 255), (0, 0, 0))
-afternoonWind = font_8.render('SW @ 13.3 km/h', True, (255, 255, 255), (0, 0, 0))
-eveningWind = font_8.render('S @ 10.4 km/h', True, (255, 255, 255), (0, 0, 0))
-nightWind = font_8.render('SW @ 13.3 km/h', True, (255, 255, 255), (0, 0, 0))
+        self.sunriseIcon = pygame.transform.scale(sunriseIcon, (30, 30))
+        self.sunsetIcon = pygame.transform.scale(sunsetIcon, (30, 30))
+        self.moonriseIcon = pygame.transform.scale(moonriseIcon, (30, 30))
+        self.moonsetIcon = pygame.transform.scale(moonsetIcon, (30, 30))
+        
+        self.moonStateIcon = load_svg("svg/wi-moon-waxing-crescent-3.svg")
 
-sunriseLabel = font_8.render('Sunrise', True, (255, 255, 255), (0, 0, 0))
-sunsetLabel = font_8.render('Sunset', True, (255, 255, 255), (0, 0, 0))
-moonriseLabel = font_8.render('Moonrise', True, (255, 255, 255), (0, 0, 0))
-moonsetLabel = font_8.render('Moonset', True, (255, 255, 255), (0, 0, 0))
+        self.morningWeatherIconRect = self.morningWeatherIcon.get_rect(center = (0 + 60, 136))
+        self.afternoonWeatherIconRect = self.afternoonWeatherIcon.get_rect(center = (120 + 60, 136))
+        self.eveningWeatherIconRect = self.eveningWeatherIcon.get_rect(center = (240 + 60, 136))
+        self.nightWeatherIconRect = self.nightWeatherIcon.get_rect(center = (360 + 60, 136))
+        self.moonStateIconRect = self.moonStateIcon.get_rect(center = (215 + 50, 236))
 
-sunsetTime = font_10.render('06:57 PM', True, (255, 255, 255), (0, 0, 0))
-sunriseTime = font_10.render('07:07 AM', True, (255, 255, 255), (0, 0, 0))
-moonriseTime = font_10.render('09:28 PM', True, (255, 255, 255), (0, 0, 0))
-moonsetTime = font_10.render('09:57 AM', True, (255, 255, 255), (0, 0, 0))
+    def initFonts(self):
+        self.font_18 = pygame.font.Font('jbm.ttf', 18)
+        self.font_14 = pygame.font.Font('jbm.ttf', 14)
+        self.font_12 = pygame.font.Font('jbm.ttf', 12)
+        self.font_10 = pygame.font.Font('jbm.ttf', 10)
+        self.font_8 = pygame.font.Font('jbm.ttf', 8)
+        self.font_ch = pygame.font.Font("ht.otf", 10)
 
-moonStateLabel = font_10.render('New Moon', True, (255, 255, 255), (0, 0, 0))
+    def initLabel(self):
+        self.morningLabel = self.font_10.render('Morning', True, (255, 255, 255), (0, 0, 0))
+        self.afternoonLabel = self.font_10.render('Afternoon', True, (255, 255, 255), (0, 0, 0))
+        self.eveningLabel = self.font_10.render('Evening', True, (255, 255, 255), (0, 0, 0))
+        self.nightLabel = self.font_10.render('Night', True, (255, 255, 255), (0, 0, 0))
 
-techNewsLabel = font_8.render('Random Tech News', True, (255, 255, 255), (0, 0, 0))
-techNewsTitle = create_text(
-    text="Amazon Union Loses Vote at Second Staten Island Warehouse",
-    font=font_10,
-    color=(255, 255, 255),  # White
-    pos=(325, 230),  # Center of the screen
-    max_width=140,
-)
+        self.sunriseLabel = self.font_8.render('Sunrise', True, (255, 255, 255), (0, 0, 0))
+        self.sunsetLabel = self.font_8.render('Sunset', True, (255, 255, 255), (0, 0, 0))
+        self.moonriseLabel = self.font_8.render('Moonrise', True, (255, 255, 255), (0, 0, 0))
+        self.moonsetLabel = self.font_8.render('Moonset', True, (255, 255, 255), (0, 0, 0))
 
-currencyConvertion = font_10.render('1 USD = 4.35 MYR', True, (255, 255, 255), (0, 0, 0))
+        self.techNewsLabel = self.font_8.render('Random Tech News', True, (255, 255, 255), (0, 0, 0))
 
-co2label = font_8.render('CO2', True, (255, 255, 255), (0, 0, 0))
-no2label = font_8.render('NO2', True, (255, 255, 255), (0, 0, 0))
-o3label = font_8.render('O3', True, (255, 255, 255), (0, 0, 0))
-so2 = font_8.render('SO2', True, (255, 255, 255), (0, 0, 0))
-pm25label = font_8.render('PM2.5', True, (255, 255, 255), (0, 0, 0))
-pm10label = font_8.render('PM10', True, (255, 255, 255), (0, 0, 0))
+        self.colabel = self.font_8.render('CO', True, (255, 255, 255), (0, 0, 0))
+        self.no2label = self.font_8.render('NO2', True, (255, 255, 255), (0, 0, 0))
+        self.o3label = self.font_8.render('O3', True, (255, 255, 255), (0, 0, 0))
+        self.so2 = self.font_8.render('SO2', True, (255, 255, 255), (0, 0, 0))
+        self.pm25label = self.font_8.render('PM2.5', True, (255, 255, 255), (0, 0, 0))
+        self.pm10label = self.font_8.render('PM10', True, (255, 255, 255), (0, 0, 0))
 
-co2value = font_10.render('614ppm', True, (255, 255, 255), (0, 0, 0))
-no2value = font_10.render('13ppm', True, (255, 255, 255), (0, 0, 0))
-o3value = font_10.render('0.1ppm', True, (255, 255, 255), (0, 0, 0))
-so2value = font_10.render('10ppm', True, (255, 255, 255), (0, 0, 0))
-pm25value = font_10.render('19µm', True, (255, 255, 255), (0, 0, 0))
-pm10value = font_10.render('21µm', True, (255, 255, 255), (0, 0, 0))
+    def updateTime(self):
+        self.currentTime = self.font_10.render(datetime.strftime(datetime.now(), '%a, %b %d %I:%M:%S %p'), True, (255, 255, 255), (0, 0, 0))
 
-lunarDate = font_ch.render('立夏 农历三月廿九', True, (255, 255, 255), (0, 0, 0))
+    def updateWeather(self):
+        weather = self.weatherData['current']
 
-currentWeatherDescriptionRect = currentWeatherDescription.get_rect(center = (80, 64))
-currentTimeRect = currentTime.get_rect(center = (320+80, 32))
-currentZoneRect = currentZone.get_rect(center = (320+80, 48))
+        self.currentTempC = self.font_18.render(str(weather['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0))
+        self.currentTempF = self.font_12.render(str(weather['temp_f'])+'°F', True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherDescription = self.font_10.render(weather['condition']['text'], True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherFeelLike = self.font_10.render('Feels like: {}°C'.format(weather['feelslike_c']), True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherWind = self.font_10.render('Wind: {} @ {} km/h'.format(weather['wind_dir'], self.weatherData['current']['wind_kph']), True, (255, 255, 255), (0, 0, 0))
+        self.currentWeatherHumidity = self.font_10.render('Humidity: {}%'.format(weather['humidity']), True, (255, 255, 255), (0, 0, 0))
+        
+        self.currentZone = self.font_10.render(self.weatherData['location']['tz_id'], True, (255, 255, 255), (0, 0, 0))
 
-morningLabelRect = morningLabel.get_rect(center = (0+60, 96))
-afternoonLabelRect = afternoonLabel.get_rect(center = (120+60, 96))
-eveningLabelRect = eveningLabel.get_rect(center = (240+60, 96))
-nightLabelRect = nightLabel.get_rect(center = (360+60, 96))
+        self.covalue = self.font_10.render(str(round(weather['air_quality']['co']))+'µm', True, (255, 255, 255), (0, 0, 0))
+        self.no2value = self.font_10.render(str(round(weather['air_quality']['no2']))+'µm', True, (255, 255, 255), (0, 0, 0))
+        self.o3value = self.font_10.render(str(round(weather['air_quality']['o3']))+'µm', True, (255, 255, 255), (0, 0, 0))
+        self.so2value = self.font_10.render(str(round(weather['air_quality']['so2']))+'µm', True, (255, 255, 255), (0, 0, 0))
+        self.pm25value = self.font_10.render(str(round(weather['air_quality']['pm2_5']))+'µm', True, (255, 255, 255), (0, 0, 0))
+        self.pm10value = self.font_10.render(str(round(weather['air_quality']['pm10']))+'µm', True, (255, 255, 255), (0, 0, 0))
 
-morningTempRect = morningTemp.get_rect(center = (0+60, 170))
-afternoonTempRect = afternoonTemp.get_rect(center = (120+60, 170))
-eveningTempRect = eveningTemp.get_rect(center = (240+60, 170))
-nightTempRect = nightTemp.get_rect(center = (360+60, 170))
+        weather = self.weatherData['forecast']['forecastday'][0]
 
-morningWindRect = morningWind.get_rect(center = (0+60, 186))
-afternoonWindRect = afternoonWind.get_rect(center = (120+60, 186))
-eveningWindRect = eveningWind.get_rect(center = (240+60, 186))
-nightWindRect = nightWind.get_rect(center = (360+60, 186))
+        self.morningTemp = self.font_14.render(str(weather['hour'][6]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0))
+        self.afternoonTemp = self.font_14.render(str(weather['hour'][12]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0))
+        self.eveningTemp = self.font_14.render(str(weather['hour'][19]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0))
+        self.nightTemp = self.font_14.render(str(weather['hour'][0]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0))
 
-moonStateLabelRect = moonStateLabel.get_rect(center = (215+50, 274))
+        self.morningWind = self.font_8.render('{} @ {} km/h'.format(weather['hour'][6]['wind_dir'], weather['hour'][6]['wind_kph']), True, (255, 255, 255), (0, 0, 0))
+        self.afternoonWind = self.font_8.render('{} @ {} km/h'.format(weather['hour'][12]['wind_dir'], weather['hour'][12]['wind_kph']), True, (255, 255, 255), (0, 0, 0))
+        self.eveningWind = self.font_8.render('{} @ {} km/h'.format(weather['hour'][19]['wind_dir'], weather['hour'][19]['wind_kph']), True, (255, 255, 255), (0, 0, 0))
+        self.nightWind = self.font_8.render('{} @ {} km/h'.format(weather['hour'][0]['wind_dir'], weather['hour'][0]['wind_kph']), True, (255, 255, 255), (0, 0, 0))
 
-currencyConvertionRect = currencyConvertion.get_rect(center = (0+67.5, 288+16))
+        self.sunsetTime = self.font_10.render(weather['astro']['sunrise'], True, (255, 255, 255), (0, 0, 0))
+        self.sunriseTime = self.font_10.render(weather['astro']['sunset'], True, (255, 255, 255), (0, 0, 0))
+        self.moonriseTime = self.font_10.render(weather['astro']['moonrise'], True, (255, 255, 255), (0, 0, 0))
+        self.moonsetTime = self.font_10.render(weather['astro']['moonset'], True, (255, 255, 255), (0, 0, 0))
 
-lunarDateRect = lunarDate.get_rect(center = (368+56, 288+16))
+        self.moonState = self.font_10.render(weather['astro']['moon_phase'], True, (255, 255, 255), (0, 0, 0))
 
-while 1:
-    screen.fill((0, 0, 0))
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            sys.exit()
+    def updateNews(self):
+        self.techNewsTitle = create_text(
+            text="Amazon Union Loses Vote at Second Staten Island Warehouse",
+            font=self.font_10,
+            color=(255, 255, 255),  # White
+            pos=(325, 230),  # Center of the self.screen
+            max_width=140,
+        )
 
-    screen.blit(currentWeatherIcon, (20, 8))
-    screen.blit(currentTempC, (70, 10))
-    screen.blit(currentTempF, (70, 32))
-    screen.blit(currentWeatherDescription, currentWeatherDescriptionRect)
-    screen.blit(currentWeatherFeelLike, (180, 18))
-    screen.blit(currentWeatherWind, (180, 34))
-    screen.blit(currentWeatherHumidity, (180, 50))
-    screen.blit(currentTime, currentTimeRect)
-    screen.blit(currentZone, currentZoneRect)
+    def updateCurrencyConvertion(self):
+        self.currencyConvertion = self.font_10.render('1 USD = 4.35 MYR', True, (255, 255, 255), (0, 0, 0))
 
-    screen.blit(morningLabel, morningLabelRect)
-    screen.blit(afternoonLabel, afternoonLabelRect)
-    screen.blit(eveningLabel, eveningLabelRect)
-    screen.blit(nightLabel, nightLabelRect)
+    def updateLunarDate(self):
+        self.lunarDate = self.font_ch.render('立夏 农历三月廿九', True, (255, 255, 255), (0, 0, 0))
 
-    screen.blit(morningWeatherIcon, morningWeatherIconRect)
-    screen.blit(afternoonWeatherIcon, afternoonWeatherIconRect)
-    screen.blit(eveningWeatherIcon, eveningWeatherIconRect)
-    screen.blit(nightWeatherIcon, nightWeatherIconRect)
+    def updateRect(self):
+        self.currentTimeRect = self.currentTime.get_rect(center = (320+80, 32))
 
-    screen.blit(morningTemp, morningTempRect)
-    screen.blit(afternoonTemp, afternoonTempRect)
-    screen.blit(eveningTemp, eveningTempRect)
-    screen.blit(nightTemp, nightTempRect)
+        self.currentWeatherDescriptionRect = self.currentWeatherDescription.get_rect(center = (80, 64))
+        self.currentZoneRect = self.currentZone.get_rect(center = (320+80, 48))
 
-    screen.blit(morningWind, morningWindRect)
-    screen.blit(afternoonWind, afternoonWindRect)
-    screen.blit(eveningWind, eveningWindRect)
-    screen.blit(nightWind, nightWindRect)
+        self.morningLabelRect = self.morningLabel.get_rect(center = (0+60, 96))
+        self.afternoonLabelRect = self.afternoonLabel.get_rect(center = (120+60, 96))
+        self.eveningLabelRect = self.eveningLabel.get_rect(center = (240+60, 96))
+        self.nightLabelRect = self.nightLabel.get_rect(center = (360+60, 96))
 
-    screen.blit(sunriseIcon, (20, 216))
-    screen.blit(sunsetIcon, (20, 246))
-    screen.blit(moonriseIcon, (110, 216))
-    screen.blit(moonsetIcon, (110, 246))
+        self.morningTempRect = self.morningTemp.get_rect(center = (0+60, 170))
+        self.afternoonTempRect = self.afternoonTemp.get_rect(center = (120+60, 170))
+        self.eveningTempRect = self.eveningTemp.get_rect(center = (240+60, 170))
+        self.nightTempRect = self.nightTemp.get_rect(center = (360+60, 170))
 
-    screen.blit(sunriseLabel, (54, 218))
-    screen.blit(sunsetLabel, (54, 248))
-    screen.blit(moonriseLabel, (140, 218))
-    screen.blit(moonsetLabel, (140, 248))
+        self.morningWindRect = self.morningWind.get_rect(center = (0+60, 186))
+        self.afternoonWindRect = self.afternoonWind.get_rect(center = (120+60, 186))
+        self.eveningWindRect = self.eveningWind.get_rect(center = (240+60, 186))
+        self.nightWindRect = self.nightWind.get_rect(center = (360+60, 186))
 
-    screen.blit(sunriseTime, (54, 230))
-    screen.blit(sunsetTime, (54, 260))
-    screen.blit(moonriseTime, (140, 230))
-    screen.blit(moonsetTime, (140, 260))
+        self.moonStateRect = self.moonState.get_rect(center = (215+50, 274))
 
-    screen.blit(moonStateIcon, moonStateIconRect)
-    screen.blit(moonStateLabel, moonStateLabelRect)
+        self.currencyConvertionRect = self.currencyConvertion.get_rect(center = (0+67.5, 288+16))
 
-    screen.blit(techNewsLabel, (325, 214))
-    for text_object in techNewsTitle[:3]:
-        screen.blit(*text_object)
+        self.lunarDateRect = self.lunarDate.get_rect(center = (368+56, 288+16))
 
-    screen.blit(currencyConvertion, currencyConvertionRect)
+    def draw(self):
+        self.screen.fill((0, 0, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                sys.exit()
 
-    screen.blit(co2label, (140, 292))
-    screen.blit(no2label, (180, 292))
-    screen.blit(o3label, (220, 292))
-    screen.blit(so2, (260, 292))
-    screen.blit(pm25label, (300, 292))
-    screen.blit(pm10label, (340, 292))
+        self.screen.blit(self.currentWeatherIcon, (20, 8))
+        self.screen.blit(self.currentTempC, (70, 10))
+        self.screen.blit(self.currentTempF, (70, 32))
+        self.screen.blit(self.currentWeatherDescription, self.currentWeatherDescriptionRect)
+        self.screen.blit(self.currentWeatherFeelLike, (180, 18))
+        self.screen.blit(self.currentWeatherWind, (180, 34))
+        self.screen.blit(self.currentWeatherHumidity, (180, 50))
+        self.screen.blit(self.currentTime, self.currentTimeRect)
+        self.screen.blit(self.currentZone, self.currentZoneRect)
 
-    screen.blit(co2value, (140, 302))
-    screen.blit(no2value, (180, 302))
-    screen.blit(o3value, (220, 302))
-    screen.blit(so2value, (260, 302))
-    screen.blit(pm25value, (300, 302))
-    screen.blit(pm10value, (340, 302))
+        self.screen.blit(self.morningLabel, self.morningLabelRect)
+        self.screen.blit(self.afternoonLabel, self.afternoonLabelRect)
+        self.screen.blit(self.eveningLabel, self.eveningLabelRect)
+        self.screen.blit(self.nightLabel, self.nightLabelRect)
 
-    screen.blit(lunarDate, lunarDateRect)
+        self.screen.blit(self.morningWeatherIcon, self.morningWeatherIconRect)
+        self.screen.blit(self.afternoonWeatherIcon, self.afternoonWeatherIconRect)
+        self.screen.blit(self.eveningWeatherIcon, self.eveningWeatherIconRect)
+        self.screen.blit(self.nightWeatherIcon, self.nightWeatherIconRect)
 
-    pygame.draw.line(screen, (255, 255, 255), (0, 80), (480, 80), 1)
-    pygame.draw.line(screen, (255, 255, 255), (160, 0), (160, 80), 1)
-    pygame.draw.line(screen, (255, 255, 255), (320, 0), (320, 80), 1)
-    pygame.draw.line(screen, (255, 255, 255), (0, 202), (480, 202), 1)
-    pygame.draw.line(screen, (255, 255, 255), (0, 288), (480, 288), 1)
-    pygame.draw.line(screen, (255, 255, 255), (215, 202), (215, 288), 1)
-    pygame.draw.line(screen, (255, 255, 255), (315, 202), (315, 288), 1)
-    pygame.draw.line(screen, (255, 255, 255), (135, 288), (135, 320), 1)
-    pygame.draw.line(screen, (255, 255, 255), (368, 288), (368, 320), 1)
+        self.screen.blit(self.morningTemp, self.morningTempRect)
+        self.screen.blit(self.afternoonTemp, self.afternoonTempRect)
+        self.screen.blit(self.eveningTemp, self.eveningTempRect)
+        self.screen.blit(self.nightTemp, self.nightTempRect)
 
-    pygame.display.flip()
+        self.screen.blit(self.morningWind, self.morningWindRect)
+        self.screen.blit(self.afternoonWind, self.afternoonWindRect)
+        self.screen.blit(self.eveningWind, self.eveningWindRect)
+        self.screen.blit(self.nightWind, self.nightWindRect)
+
+        self.screen.blit(self.sunriseIcon, (20, 216))
+        self.screen.blit(self.sunsetIcon, (20, 246))
+        self.screen.blit(self.moonriseIcon, (110, 216))
+        self.screen.blit(self.moonsetIcon, (110, 246))
+
+        self.screen.blit(self.sunriseLabel, (54, 218))
+        self.screen.blit(self.sunsetLabel, (54, 248))
+        self.screen.blit(self.moonriseLabel, (140, 218))
+        self.screen.blit(self.moonsetLabel, (140, 248))
+
+        self.screen.blit(self.sunriseTime, (54, 230))
+        self.screen.blit(self.sunsetTime, (54, 260))
+        self.screen.blit(self.moonriseTime, (140, 230))
+        self.screen.blit(self.moonsetTime, (140, 260))
+
+        self.screen.blit(self.moonStateIcon, self.moonStateIconRect)
+        self.screen.blit(self.moonState, self.moonStateRect)
+
+        self.screen.blit(self.techNewsLabel, (325, 214))
+        for text_object in self.techNewsTitle[:3]:
+            self.screen.blit(*text_object)
+
+        self.screen.blit(self.currencyConvertion, self.currencyConvertionRect)
+
+        self.screen.blit(self.colabel, (140, 292))
+        self.screen.blit(self.no2label, (180, 292))
+        self.screen.blit(self.o3label, (220, 292))
+        self.screen.blit(self.so2, (260, 292))
+        self.screen.blit(self.pm25label, (300, 292))
+        self.screen.blit(self.pm10label, (340, 292))
+
+        self.screen.blit(self.covalue, (140, 302))
+        self.screen.blit(self.no2value, (180, 302))
+        self.screen.blit(self.o3value, (220, 302))
+        self.screen.blit(self.so2value, (260, 302))
+        self.screen.blit(self.pm25value, (300, 302))
+        self.screen.blit(self.pm10value, (340, 302))
+
+        self.screen.blit(self.lunarDate, self.lunarDateRect)
+
+        pygame.draw.line(self.screen, (255, 255, 255), (0, 80), (480, 80), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (160, 0), (160, 80), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (320, 0), (320, 80), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (0, 202), (480, 202), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (0, 288), (480, 288), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (215, 202), (215, 288), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (315, 202), (315, 288), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (135, 288), (135, 320), 1)
+        pygame.draw.line(self.screen, (255, 255, 255), (368, 288), (368, 320), 1)
+
+        pygame.display.flip()
+        self.tick += 1
+        self.clock.tick(1)
+
+    def run(self):
+        while True:
+            self.draw()
+            self.updateTime()
+
+            if self.tick % 600 == 0:
+                self.fetchWeather()
+                self.updateWeather()
+                self.updateIcons()
+
+            self.updateRect()
+
+if __name__ == "__main__":
+    station = WeatherStation()
+    station.run()
