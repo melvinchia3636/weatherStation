@@ -110,8 +110,8 @@ class WeatherStation:
         pygame.init()
 
         size = 480, 320
-        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
-        # self.screen = pygame.display.set_mode(size)
+        # self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode(size)
         pygame.display.set_caption("Weather Station")
 
         pygame.mouse.set_visible(False)
@@ -150,10 +150,12 @@ class WeatherStation:
         self.lunarDate = requests.get("http://api.tianapi.com/lunar/index?key=1937befd766fa706c6169f6a2153a0f8&date={}-{}-{}".format(datetime.now().year, datetime.now().month, datetime.now().day)).json()['newslist'][0]
         
     def updateIcons(self):
-        self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day' if self.weatherData['current']['is_day'] else 'night'] == self.weatherData['current']['condition']['text']][0]['dayIcon' if self.weatherData['current']['is_day'] else 'nightIcon']+".svg")
+        self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day' if self.weatherData['current']['is_day'] else 'night'] == self.weatherData['current']['condition']['text']][0]['dayIcon' if self.weatherData['current']['is_day'] else 'nightIcon']+".svg")\
+
+        weather = self.weatherData['forecast']['forecastday'][0]['hour']
         
         self.__dict__.update({
-            f'{d}WeatherIcon': load_svg('svg/'+[w for w in WEATHER_DATA if w['day' if i<=1 else 'night'] == self.weatherData['forecast']['forecastday'][0]['hour'][[6, 12, 19, 0][i]]['condition']['text']][0][('day' if i<=1 else 'night')+'Icon']+".svg") for i, d in enumerate(self.forecast)
+            f'{d}WeatherIcon': load_svg('svg/'+[w for w in WEATHER_DATA if w['day' if weather[[6, 12, 18, 0][i]]['is_day'] else 'night'] == weather[[6, 12, 18, 0][i]]['condition']['text']][0][('day' if weather[[6, 12, 18, 0][i]]['is_day'] else 'night')+'Icon']+".svg") for i, d in enumerate(self.forecast)
         })
 
         self.__dict__.update({f'{i}Icon': pygame.transform.scale(load_svg(f"svg/wi-{i}.svg"), (30, 30)) for i in self.astro})
@@ -192,12 +194,12 @@ class WeatherStation:
         
         self.currentZone = self.font_10.render(self.weatherData['location']['tz_id'], True, (255, 255, 255), (0, 0, 0))
 
-        self.__dict__.update({f'{i}value': self.font_10.render(str(round(weather['air_quality'][i]))+'µm', True, (255, 255, 255), (0, 0, 0)) for i in self.airQualities})
+        self.__dict__.update({f'{i}value': self.font_10.render(str(round(weather['air_quality'][i]))+'µm' if i in weather['air_quality'] else 'N/A', True, (255, 255, 255), (0, 0, 0)) for i in self.airQualities})
 
         weather = self.weatherData['forecast']['forecastday'][0]
 
-        self.__dict__.update({f'{i}Temp': self.font_14.render(str(weather['hour'][[6, 12, 19, 0][index]]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
-        self.__dict__.update({f'{i}Wind': self.font_8.render('{} @ {} km/h'.format(weather['hour'][[6, 12, 19, 0][index]]['wind_dir'], weather['hour'][[6, 12, 19, 0][index]]['wind_kph']), True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f'{i}Temp': self.font_14.render(str(weather['hour'][[6, 12, 18, 0][index]]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
+        self.__dict__.update({f'{i}Wind': self.font_8.render('{} @ {} km/h'.format(weather['hour'][[6, 12, 18, 0][index]]['wind_dir'], weather['hour'][[6, 12, 18, 0][index]]['wind_kph']), True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
 
         self.__dict__.update({f'{i}Time': self.font_10.render(weather['astro'][i], True, (255, 255, 255), (0, 0, 0)) for i in self.astro})
 
