@@ -68,18 +68,22 @@ class WeatherStation:
     def fetchWeather(self):
         self.weatherData = request(
             "http://api.weatherapi.com/v1/forecast.json?key=3226026245ad4bd4a0d75052220405&q=Johor&days=1&aqi=yes&alerts=no")
+        print("weather done")
 
     def fetchCurrencyConvertion(self):
         self.currencyConvertionRate = request(
             "https://open.er-api.com/v6/latest/USD")['rates']['MYR']
+        print("currency done")
 
     def fetchNews(self):
         self.newsData = request(
             "https://api.nytimes.com/svc/topstories/v2/technology.json?api-key=53BGQxklAkbUFc7fewNlsuUABdSqzlgs")['results']
+        print("news done")
 
     def fetchLunarDate(self):
         self.lunarDate = request("http://api.tianapi.com/lunar/index?key=1937befd766fa706c6169f6a2153a0f8&date={}-{}-{}".format(
             datetime.now().year, datetime.now().month, datetime.now().day))['newslist'][0]
+        print("lunar date done")
 
     def updateIcons(self):
         self.currentWeatherIcon = load_svg('svg/'+[i for i in WEATHER_DATA if i['day' if self.weatherData['current']['is_day'] else 'night'] == self.weatherData['current']['condition']['text']][0]['dayIcon' if self.weatherData['current']['is_day'] else 'nightIcon']+".svg")\
@@ -109,23 +113,23 @@ class WeatherStation:
 
     def initLabel(self):
         self.__dict__.update({f'{i}Label': self.font_10.render(
-            i.title(), True, (255, 255, 255), (0, 0, 0)) for i in self.forecast+self.astro})
+            i.title(), True, (41, 41, 41), (226, 233, 233)) for i in self.forecast+self.astro})
 
         self.techNewsLabel = self.font_8.render(
-            'Random Tech News', True, (255, 255, 255), (0, 0, 0))
+            'Random Tech News', True, (41, 41, 41), (226, 233, 233))
 
         self.__dict__.update({
-            f'{i}label': self.font_8.render(i.upper().replace("_", '.'), True, (255, 255, 255), (0, 0, 0)) for i in self.airQualities
+            f'{i}label': self.font_8.render(i.upper().replace("_", '.'), True, (41, 41, 41), (226, 233, 233)) for i in self.airQualities
         })
 
     def updateTime(self):
         self.currentTime = self.font_10.render(datetime.strftime(
-            datetime.now(), '%a, %b %d %I:%M:%S %p'), True, (255, 255, 255), (0, 0, 0))
+            datetime.now(), '%a, %b %d %I:%M:%S %p'), True, (41, 41, 41), (226, 233, 233))
 
     def updateWeather(self):
         weather = self.weatherData['current']
 
-        self.__dict__.update({i[0]: i[1].render(i[2], True, (255, 255, 255), (0, 0, 0)) for i in [
+        self.__dict__.update({i[0]: i[1].render(i[2], True, (41, 41, 41), (226, 233, 233)) for i in [
             ['currentTempC', self.font_18, str(weather['temp_c'])+"°C"],
             ['currentTempF', self.font_12, str(weather['temp_f'])+"°F"],
             ['currentWeatherDescription', self.font_10,
@@ -140,38 +144,38 @@ class WeatherStation:
         ]})
 
         self.__dict__.update({f'{i}value': self.font_10.render(str(round(
-            weather['air_quality'][i]))+'µm' if i in weather['air_quality'] else 'N/A', True, (255, 255, 255), (0, 0, 0)) for i in self.airQualities})
+            weather['air_quality'][i]))+'µm' if i in weather['air_quality'] else 'N/A', True, (41, 41, 41), (226, 233, 233)) for i in self.airQualities})
 
         weather = self.weatherData['forecast']['forecastday'][0]
 
         self.__dict__.update({f'{i}Temp': self.font_14.render(str(weather['hour'][[
-                             7, 13, 20, 1][index]]['temp_c'])+"°C", True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
+                             7, 13, 20, 1][index]]['temp_c'])+"°C", True, (41, 41, 41), (226, 233, 233)) for index, i in enumerate(self.forecast)})
         self.__dict__.update({f'{i}Wind': self.font_8.render('{} @ {} km/h'.format(weather['hour'][[7, 13, 20, 1][index]]['wind_dir'], weather['hour'][[
-                             7, 13, 20, 1][index]]['wind_kph']), True, (255, 255, 255), (0, 0, 0)) for index, i in enumerate(self.forecast)})
+                             7, 13, 20, 1][index]]['wind_kph']), True, (41, 41, 41), (226, 233, 233)) for index, i in enumerate(self.forecast)})
 
         self.__dict__.update({f'{i}Time': self.font_10.render(
-            weather['astro'][i], True, (255, 255, 255), (0, 0, 0)) for i in self.astro})
+            weather['astro'][i], True, (41, 41, 41), (226, 233, 233)) for i in self.astro})
 
         self.moonState = self.font_10.render(
-            weather['astro']['moon_phase'], True, (255, 255, 255), (0, 0, 0))
+            weather['astro']['moon_phase'], True, (41, 41, 41), (226, 233, 233))
 
     def updateNews(self):
         self.techNewsTitle = create_text(
             text=random.choice(self.newsData)['title'],
             font=self.font_10,
-            color=(255, 255, 255),
+            color=(41, 41, 41),
             pos=(325, 230),
             max_width=140,
         )
 
     def updateCurrencyConvertion(self):
         self.currencyConvertion = self.font_10.render(
-            f'1 USD = {self.currencyConvertionRate} MYR', True, (255, 255, 255), (0, 0, 0))
+            f'1 USD = {self.currencyConvertionRate} MYR', True, (41, 41, 41), (226, 233, 233))
 
     def updateLunarDate(self):
         print(self.lunarDate['lubarmonth'], self.lunarDate['lunardate'])
         self.lunarDate = self.font_ch.render('{}年 {}{}'.format(
-            self.lunarDate['tiangandizhiyear'], self.lunarDate['lubarmonth'], self.lunarDate['lunarday']), True, (255, 255, 255), (0, 0, 0))
+            self.lunarDate['tiangandizhiyear'], self.lunarDate['lubarmonth'], self.lunarDate['lunarday']), True, (41, 41, 41), (226, 233, 233))
 
     def updateRect(self):
         self.currentTimeRect = self.currentTime.get_rect(center=(320+80, 32))
@@ -193,7 +197,7 @@ class WeatherStation:
         self.lunarDateRect = self.lunarDate.get_rect(center=(368+56, 288+16))
 
     def draw(self):
-        self.screen.fill((0, 0, 0))
+        self.screen.fill((226, 233, 233))
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 sys.exit()
@@ -234,7 +238,7 @@ class WeatherStation:
 
         self.screen.blit(self.lunarDate, self.lunarDateRect)
 
-        [pygame.draw.line(self.screen, (255, 255, 255), x, y, 1)
+        [pygame.draw.line(self.screen, (41, 41, 41), x, y, 1)
          for x, y in self.lines]
 
         pygame.display.flip()
